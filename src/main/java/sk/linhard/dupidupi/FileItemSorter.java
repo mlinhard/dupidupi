@@ -6,8 +6,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -17,17 +15,17 @@ import java.util.function.Consumer;
 public class FileItemSorter implements Consumer<FileItem> {
 
     long count = 0l;
-    Map<Long, LinkedList<FileItem>> files = new HashMap<>();
+    Map<Long, SizeBucket> files = new HashMap<>();
 
     @Override
     public void accept(FileItem fileItem) {
         count++;
-        files.compute(fileItem.getSize(), (k, oldList) -> {
-            if (oldList == null) {
-                return new LinkedList<>(List.of(fileItem));
+        files.compute(fileItem.getSize(), (k, existingBucket) -> {
+            if (existingBucket == null) {
+                return new SizeBucket(fileItem);
             } else {
-                oldList.add(fileItem);
-                return oldList;
+                existingBucket.add(fileItem);
+                return existingBucket;
             }
         });
         if (count % 10_000L == 0) {
