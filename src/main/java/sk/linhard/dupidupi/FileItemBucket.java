@@ -7,12 +7,13 @@ import java.util.LinkedList;
 
 import static lombok.AccessLevel.PRIVATE;
 
+
 @Getter
 @FieldDefaults(level = PRIVATE)
-public class FileSizeBucket {
+public class FileItemBucket {
     final LinkedList<FileItem> files;
 
-    public FileSizeBucket(FileItem firstItem) {
+    public FileItemBucket(FileItem firstItem) {
         files = new LinkedList<>();
         files.add(firstItem);
     }

@@ -1,10 +1,10 @@
 {
   "roots": [
-    "/home/mlinhard/dev/projects/other/dupidupi/src/test/resources/testdir/root1",
-    "/home/mlinhard/dev/projects/other/dupidupi/src/test/resources/testdir/root2"
+    "testdir/root1",
+    "testdir/root2"
   ],
   "ignore": [
-    "/home/mlinhard/dev/projects/other/dupidupi/src/test/resources/testdir/root2/f",
+    "testdir/root2/f",
     "c"
   ]
 }

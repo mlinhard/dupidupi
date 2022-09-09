@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -23,9 +24,13 @@ public class Walker {
     List<Path> roots;
     List<Path> ignore;
 
-    public void run(Consumer<FileItem> consumer) throws IOException {
-        for (Path root : roots) {
-            Files.walkFileTree(root, new FileVisitorImpl(ignore, consumer));
+    public void run(Consumer<FileItem> consumer) {
+        try {
+            for (Path root : roots) {
+                Files.walkFileTree(root, new FileVisitorImpl(ignore, consumer));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.concurrent.Callable;
 
 @Command(name = "dupidupi", mixinStandardHelpOptions = true, version = "1.0",
-        description = "Deduplicates")
+        description = "Deduplicates a set of files defined by given configuration")
 @Slf4j
 public class Main implements Callable<Integer> {
 
@@ -23,23 +23,24 @@ public class Main implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
-
-        Config config = Config.load(configFile);
-        log.info("Looking for files in");
-        for (var root : config.getRoots()) {
-            log.info("  " + root);
+    public Integer call() {
+        try {
+            var config = Config.load(configFile);
+            log.info("Looking for files in");
+            for (var root : config.getRoots()) {
+                log.info("  " + root);
+            }
+            log.info("Ignoring");
+            for (var ignore : config.getIgnore()) {
+                log.info("  " + ignore);
+            }
+            Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
+            Deduper deduper = new Deduper();
+            var results = deduper.run(w);
+            return 0;
+        } catch (Exception e) {
+            log.error("ERROR: {}", e.getMessage(), e);
+            return 1;
         }
-        log.info("Ignoring");
-        for (var ignore : config.getIgnore()) {
-            log.info("  " + ignore);
-        }
-        Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
-        FileItemCounter counter = new FileItemCounter();
-        w.run(counter);
-        log.info("Found {} files with {} different sizes", counter.getCount(), counter.getSizes().size());
-        // w.run(new FileItemPrinter());
-        return 0;
     }
-
 }
