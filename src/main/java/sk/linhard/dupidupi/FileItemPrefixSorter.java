@@ -4,11 +4,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.HashMap;
-
-import static com.google.common.base.Preconditions.checkState;
+import java.util.LinkedList;
 
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -18,24 +15,54 @@ public class FileItemPrefixSorter {
     final FileChannelRepository fileChannelRepository;
 
     public void sort(FileItemBucket bucket) {
-        try {
-            long fileSize = bucket.fileSize();
-            checkState(fileSize != 0L, "Trying to sort file size bucket for file size 0");
-            FileItemPrefixReader[] readers = new FileItemPrefixReader[bucket.getFiles().size()];
-            int i = 0;
-            for (FileItem item : bucket.getFiles()) {
-                readers[i++] = new FileItemPrefixReader(item, fileChannelRepository);
-            }
-
-            for (int prefixLength = 1; prefixLength <= fileSize; prefixLength++) {
-                var prefixes = new HashMap<Byte, FileItemPrefixReader>();
-                for (FileItemPrefixReader reader : readers) {
-                    prefixes.put(reader.nextByte(), reader);
-                }
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        if (bucket.isSingleton()) {
+            return; // no need to sort this one, this is a unique file
         }
+        long fileSize = bucket.fileSize();
+        if (fileSize == 0L) {
+            // files with zero size are trivial duplicates
+            resultRepository.addDuplicateBucket(bucket);
+            return;
+        }
+        LinkedList<PrefixSortTask> sortTasks = new LinkedList<>();
+        sortTasks.add(createRootTask(bucket));
+        while (!sortTasks.isEmpty()) {
+            splitByNextByte(sortTasks.removeFirst(), sortTasks);
+        }
+    }
+
+    private PrefixSortTask createRootTask(FileItemBucket bucket) {
+        FileItemPrefixReader[] readers = new FileItemPrefixReader[bucket.getFiles().size()];
+        int i = 0;
+        for (FileItem item : bucket.getFiles()) {
+            readers[i++] = new FileItemPrefixReader(item, fileChannelRepository);
+        }
+        return new PrefixSortTask(1L, readers);
+    }
+
+    private void splitByNextByte(PrefixSortTask task, LinkedList<PrefixSortTask> sortTasks) {
+        // TODO: pruning logic, if singleton, if at the end, etc...
+        var readersByNextByte = new HashMap<Byte, LinkedList<FileItemPrefixReader>>();
+        for (FileItemPrefixReader reader : task.readers) {
+            readersByNextByte.compute(reader.nextByte(), (k, existingBucket) -> {
+                if (existingBucket == null) {
+                    LinkedList<FileItemPrefixReader> newBucket = new LinkedList<>();
+                    newBucket.add(reader);
+                    return newBucket;
+                } else {
+                    existingBucket.add(reader);
+                    return existingBucket;
+                }
+            });
+        }
+
+       // TODO: add newly discovered tasks
+    }
+
+    @AllArgsConstructor
+    private static class PrefixSortTask {
+        long prefixLength;
+        FileItemPrefixReader[] readers;
     }
 
 

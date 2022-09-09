@@ -1,10 +1,9 @@
 package sk.linhard.dupidupi;
 
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -25,12 +24,20 @@ public class FileItemPrefixReader {
         this.fileChannelRepository = fileChannelRepository;
         this.prefixLength = 0L;
         this.bufferOffset = 0L;
-        this.fileBytes = ByteBuffer.allocate(Math.min(32, (int) item.getSize()));
+        this.fileBytes = null;
     }
 
-    public Byte nextByte() throws IOException {
-        FileChannel ch = fileChannelRepository.get(item.getPath());
-        int bytesRead = ch.read(fileBytes, bufferOffset);
-        return null;
+    public Byte nextByte() {
+        try {
+            FileChannel ch = fileChannelRepository.get(item.getPath());
+            if (fileBytes == null) {
+                fileBytes = ByteBuffer.allocate(Math.min(32, (int) item.getSize()));
+            }
+            int bytesRead = ch.read(fileBytes, bufferOffset);
+            return null;
+
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

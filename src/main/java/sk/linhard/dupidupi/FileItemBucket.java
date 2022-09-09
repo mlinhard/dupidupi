@@ -29,8 +29,4 @@ public class FileItemBucket {
     public boolean isSingleton() {
         return files.size() == 1;
     }
-
-    public boolean isZeroSize() {
-        return files.getFirst().getSize() == 0L;
-    }
 }
