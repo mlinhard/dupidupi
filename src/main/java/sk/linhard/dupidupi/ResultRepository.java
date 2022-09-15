@@ -10,13 +10,13 @@ import java.util.LinkedList;
 public class ResultRepository {
 
     @Getter
-    LinkedList<FileItemBucket> duplicates = new LinkedList<>();
+    LinkedList<FileBucket> duplicates = new LinkedList<>();
 
-    public void addDuplicateBucket(FileItemBucket duplicateBucket) {
+    public void addDuplicateBucket(FileBucket duplicateBucket) {
         duplicates.add(duplicateBucket);
     }
 
-    public void addUniqueBucket(FileItemBucket fileItemBucket) {
+    public void addUniqueBucket(FileBucket fileItemBucket) {
         // nothing
         // TODO : probably won't even be needed
     }

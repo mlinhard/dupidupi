@@ -1,18 +1,18 @@
 package sk.linhard.dupidupi;
 
-import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static sk.linhard.dupidupi.ResourceUtil.resPath;
 
 
 public class ConfigTest {
 
     @Test
     void load() {
-        File testConfigFile = new File(Resources.getResource("test-config.json").getPath());
+        File testConfigFile = new File(resPath("test-config.json"));
         Config cfg = Config.load(testConfigFile.getAbsoluteFile());
         assertEquals(2, cfg.getRoots().size());
         assertEquals("testdir/root1", cfg.getRoots().get(0));

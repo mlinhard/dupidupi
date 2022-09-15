@@ -1,5 +1,6 @@
 package sk.linhard.dupidupi;
 
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
@@ -10,10 +11,10 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Getter
 @FieldDefaults(level = PRIVATE)
-public class FileItemBucket {
+public class MutableFileBucket implements FileBucket {
     final LinkedList<FileItem> files;
 
-    public FileItemBucket(FileItem firstItem) {
+    public MutableFileBucket(FileItem firstItem) {
         files = new LinkedList<>();
         files.add(firstItem);
     }
@@ -28,5 +29,9 @@ public class FileItemBucket {
 
     public boolean isSingleton() {
         return files.size() == 1;
+    }
+
+    public ImmutableFileBucket toImmutable() {
+        return new ImmutableFileBucket(ImmutableList.copyOf(files));
     }
 }

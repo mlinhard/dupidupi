@@ -13,9 +13,8 @@ public class Deduper {
         log.info("Found {} files with {} different sizes", sizeSorter.getCount(), sizeSorter.numSizeBuckets());
 
         ResultRepository resultRepository = new ResultRepository();
-        FileChannelRepository fileChannelRepository = new FileChannelRepository(100);
-        FileItemPrefixSorter prefixSorter = new FileItemPrefixSorter(resultRepository, fileChannelRepository);
-        for (FileItemBucket sizeBucket : sizeSorter.getSizeBuckets()) {
+        FileItemPrefixSorter prefixSorter = new FileItemPrefixSorter(resultRepository);
+        for (FileBucket sizeBucket : sizeSorter.getSizeBuckets()) {
             prefixSorter.sort(sizeBucket);
         }
         return resultRepository;

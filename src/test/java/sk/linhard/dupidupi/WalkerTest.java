@@ -1,19 +1,18 @@
 package sk.linhard.dupidupi;
 
-import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static sk.linhard.dupidupi.ResourceUtil.resPath;
 
 public class WalkerTest {
 
     @Test
-    void run() throws IOException {
+    void run() {
         Walker walker = new Walker(
                 List.of(
                         Path.of(resPath("testdir/root1")),
@@ -34,9 +33,5 @@ public class WalkerTest {
                 resPath("testdir/root2/d/file4.txt"),
                 resPath("testdir/root2/e/file5.txt")
         );
-    }
-
-    private String resPath(String resPath) {
-        return Resources.getResource(resPath).getPath();
     }
 }

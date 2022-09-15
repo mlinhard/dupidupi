@@ -1,5 +1,6 @@
 package sk.linhard.dupidupi;
 
+import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -12,9 +13,8 @@ import java.util.LinkedList;
 public class FileItemPrefixSorter {
 
     final ResultRepository resultRepository;
-    final FileChannelRepository fileChannelRepository;
 
-    public void sort(FileItemBucket bucket) {
+    public void sort(FileBucket bucket) {
         if (bucket.isSingleton()) {
             return; // no need to sort this one, this is a unique file
         }
@@ -31,18 +31,24 @@ public class FileItemPrefixSorter {
         }
     }
 
-    private PrefixSortTask createRootTask(FileItemBucket bucket) {
+    private PrefixSortTask createRootTask(FileBucket bucket) {
         FileItemPrefixReader[] readers = new FileItemPrefixReader[bucket.getFiles().size()];
         int i = 0;
         for (FileItem item : bucket.getFiles()) {
-            readers[i++] = new FileItemPrefixReader(item, fileChannelRepository);
+            readers[i++] = new FileItemPrefixReader(item);
         }
-        return new PrefixSortTask(1L, readers);
+        return new PrefixSortTask(0L, readers);
     }
 
     private void splitByNextByte(PrefixSortTask task, LinkedList<PrefixSortTask> sortTasks) {
-        // TODO: pruning logic, if singleton, if at the end, etc...
-        var readersByNextByte = new HashMap<Byte, LinkedList<FileItemPrefixReader>>();
+        if (task.isSingleton()) {
+            return;
+        }
+        if (task.fileSize() == task.prefixLength) {
+            resultRepository.addDuplicateBucket(task.toBucket());
+            return;
+        }
+        var readersByNextByte = new HashMap<Integer, LinkedList<FileItemPrefixReader>>();
         for (FileItemPrefixReader reader : task.readers) {
             readersByNextByte.compute(reader.nextByte(), (k, existingBucket) -> {
                 if (existingBucket == null) {
@@ -55,39 +61,32 @@ public class FileItemPrefixSorter {
                 }
             });
         }
-
-       // TODO: add newly discovered tasks
+        for (LinkedList<FileItemPrefixReader> readerList : readersByNextByte.values()) {
+            FileItemPrefixReader[] readerArray = readerList.toArray(new FileItemPrefixReader[readerList.size()]);
+            PrefixSortTask newTask = new PrefixSortTask(task.prefixLength + 1L, readerArray);
+            sortTasks.add(newTask);
+        }
     }
 
     @AllArgsConstructor
     private static class PrefixSortTask {
         long prefixLength;
         FileItemPrefixReader[] readers;
+
+        boolean isSingleton() {
+            return readers.length == 1;
+        }
+
+        long fileSize() {
+            return readers[0].getItem().getSize();
+        }
+
+        FileBucket toBucket() {
+            ImmutableList.Builder<FileItem> listBuilder = ImmutableList.builder();
+            for (FileItemPrefixReader reader : readers) {
+                listBuilder.add(reader.getItem());
+            }
+            return new ImmutableFileBucket(listBuilder.build());
+        }
     }
-
-
-    public void sort() {
-//        for (FileItemBucket fileItemBucket : files.values()) {
-//            if (fileItemBucket.isSingleton() || fileItemBucket.isZeroSize()) {
-//                resultRepository.addUniqueBucket(fileItemBucket);
-//            } else {
-//                try (FileChannelRepository fileChannelRepository = new FileChannelRepository(100)) {
-//                    new FileItemPrefixSorter(fileItemBucket, resultRepository, fileChannelRepository).sort();
-//                } catch (IOException e) {
-//                    log.error("Error while sorting file size bucket {}", fileItemBucket.fileSize(), e);
-//                }
-//            }
-//        }
-    }
-    /*
-     * How to build the dedup algorithm
-     *
-     * For size 1 size-buckets convert them to unique buckets (with long ids)
-     * For size >1 size-buckets put each through size-bucket sorter
-     *
-     * Read each size-bucket member byte-by-byte and sort them into prefix-buckets
-     * Recursively sort prefix-buckets until they are size-1 and can be converted to unique bucket
-     *
-     * */
-
 }

@@ -1,6 +1,5 @@
 package sk.linhard.dupidupi;
 
-import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -10,6 +9,7 @@ import java.util.stream.Collectors;
 
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
+import static sk.linhard.dupidupi.ResourceUtil.resPath;
 
 public class DeduperTest {
 
@@ -21,16 +21,16 @@ public class DeduperTest {
 
         Deduper deduper = new Deduper();
         ResultRepository results = deduper.run(walker);
-        List<FileItemBucket> duplicates = results.getDuplicates();
+        List<FileBucket> duplicates = results.getDuplicates();
 
         assertThat(duplicates).hasSize(3);
 
-        Map<Long, FileItemBucket> bucketsByFileSize = duplicates.stream()
-                .collect(Collectors.toMap(FileItemBucket::fileSize, identity()));
+        Map<Long, FileBucket> bucketsByFileSize = duplicates.stream()
+                .collect(Collectors.toMap(FileBucket::fileSize, identity()));
 
-        FileItemBucket size0 = bucketsByFileSize.get(0L);
-        FileItemBucket size1 = bucketsByFileSize.get(1L);
-        FileItemBucket size2 = bucketsByFileSize.get(2L);
+        FileBucket size0 = bucketsByFileSize.get(0L);
+        FileBucket size1 = bucketsByFileSize.get(1L);
+        FileBucket size2 = bucketsByFileSize.get(2L);
 
         assertThat(size0).isNotNull();
         assertThat(size0.getFiles()).hasSize(2);
@@ -51,11 +51,7 @@ public class DeduperTest {
                 resPath("testdir/example/09.txt"));
     }
 
-    private String resPath(String resPath) {
-        return Resources.getResource(resPath).getPath();
-    }
-
-    private List<String> filePaths(FileItemBucket bucket) {
+    private List<String> filePaths(FileBucket bucket) {
         return bucket.getFiles().stream()
                 .map(FileItem::getPath)
                 .collect(Collectors.toList());

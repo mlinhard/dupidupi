@@ -1,41 +1,49 @@
 package sk.linhard.dupidupi;
 
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @FieldDefaults(level = PRIVATE)
-public class FileItemPrefixReader {
+public class FileItemPrefixReader implements AutoCloseable {
 
+    final static int BUF_SIZE = 32;
+
+    @Getter
     final FileItem item;
-    final FileChannelRepository fileChannelRepository;
 
-    long prefixLength;
-    long bufferOffset;
-    ByteBuffer fileBytes;
+    final FileInputStream fileInputStream;
+    final BufferedInputStream byteStream;
 
-    public FileItemPrefixReader(FileItem item, FileChannelRepository fileChannelRepository) {
-        this.item = item;
-        this.fileChannelRepository = fileChannelRepository;
-        this.prefixLength = 0L;
-        this.bufferOffset = 0L;
-        this.fileBytes = null;
+    public FileItemPrefixReader(FileItem item) {
+        try {
+            this.item = item;
+            this.fileInputStream = new FileInputStream(item.getPath());
+            this.byteStream = new BufferedInputStream(fileInputStream, BUF_SIZE);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
-    public Byte nextByte() {
+    public int nextByte() {
         try {
-            FileChannel ch = fileChannelRepository.get(item.getPath());
-            if (fileBytes == null) {
-                fileBytes = ByteBuffer.allocate(Math.min(32, (int) item.getSize()));
-            }
-            int bytesRead = ch.read(fileBytes, bufferOffset);
-            return null;
+            return byteStream.read();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
+    @Override
+    public void close() {
+        try {
+            this.byteStream.close();
+            this.fileInputStream.close();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
