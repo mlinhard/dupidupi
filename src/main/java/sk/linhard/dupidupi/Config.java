@@ -21,6 +21,7 @@ public class Config {
     List<String> ignore = new ArrayList<>();
     int maxOpenFiles = 100;
     int bufferSize = 256;
+    String report;
 
     public List<Path> getRootPaths() {
         return roots.stream()

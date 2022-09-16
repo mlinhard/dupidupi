@@ -18,4 +18,12 @@ public class ResultRepository {
     public List<FileBucket> duplicates() {
         return duplicates;
     }
+
+    public int numDuplicates() {
+        return duplicates.stream().mapToInt(b -> b.size() - 1).sum();
+    }
+
+    public long bytesDuplicated() {
+        return duplicates.stream().mapToLong(b -> b.duplicatedBytes()).sum();
+    }
 }

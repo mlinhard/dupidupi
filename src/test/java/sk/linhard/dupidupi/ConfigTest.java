@@ -22,5 +22,6 @@ public class ConfigTest {
         assertEquals("c", cfg.getIgnore().get(1));
         assertEquals(20, cfg.getMaxOpenFiles());
         assertEquals(8, cfg.getBufferSize());
+        assertEquals("output.html", cfg.getReport());
     }
 }

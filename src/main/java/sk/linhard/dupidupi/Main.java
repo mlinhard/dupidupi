@@ -7,11 +7,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Callable;
-
-import static java.util.Comparator.comparing;
 
 @Command(name = "dupidupi", mixinStandardHelpOptions = true, version = "1.0",
         description = "Deduplicates a set of files defined by given configuration")
@@ -41,20 +37,12 @@ public class Main implements Callable<Integer> {
             Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
             Deduper deduper = new Deduper();
             var results = deduper.run(w, config.getMaxOpenFiles(), config.getBufferSize());
+            log.info("Done sorting. Found {} duplicates in {} duplicate sets, total {} bytes duplicated",
+                    results.numDuplicates(), results.duplicates().size(), results.bytesDuplicated());
 
-            List<FileBucket> duplicates = results.duplicates();
-            Collections.sort(duplicates, comparing(FileBucket::fileSize));
-
-            log.info("Done sorting. Found {} duplicate sets", duplicates.size());
-
-            int i = 0;
-            for (FileBucket duplicate : duplicates) {
-                log.info("Set {} size {}", i, duplicate.fileSize());
-                for (FileItem file : duplicate.getFiles()) {
-                    log.info("    {}", file.getPath());
-                }
-                i++;
-            }
+            log.info("Generating duplicate report to {}", config.getReport());
+            var reportGenerator = new ReportGenerator(config.getReport(), results);
+            reportGenerator.run();
 
             return 0;
         } catch (Exception e) {

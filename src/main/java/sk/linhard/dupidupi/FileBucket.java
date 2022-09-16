@@ -11,4 +11,8 @@ public interface FileBucket {
     boolean isSingleton();
 
     int size();
+
+    default long duplicatedBytes() {
+        return (size() - 1) * fileSize();
+    }
 }
