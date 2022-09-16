@@ -9,4 +9,6 @@ public interface FileBucket {
     long fileSize();
 
     boolean isSingleton();
+
+    int size();
 }

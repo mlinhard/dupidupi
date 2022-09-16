@@ -1,23 +1,21 @@
 package sk.linhard.dupidupi;
 
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.util.LinkedList;
+import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ResultRepository {
 
-    @Getter
     LinkedList<FileBucket> duplicates = new LinkedList<>();
 
     public void addDuplicateBucket(FileBucket duplicateBucket) {
         duplicates.add(duplicateBucket);
     }
 
-    public void addUniqueBucket(FileBucket fileItemBucket) {
-        // nothing
-        // TODO : probably won't even be needed
+    public List<FileBucket> duplicates() {
+        return duplicates;
     }
 }

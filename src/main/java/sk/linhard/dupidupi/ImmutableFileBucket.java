@@ -23,4 +23,8 @@ public class ImmutableFileBucket implements FileBucket {
     public boolean isSingleton() {
         return files.size() == 1;
     }
+
+    public int size() {
+        return files.size();
+    }
 }

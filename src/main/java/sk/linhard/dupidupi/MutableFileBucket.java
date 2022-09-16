@@ -34,4 +34,8 @@ public class MutableFileBucket implements FileBucket {
     public ImmutableFileBucket toImmutable() {
         return new ImmutableFileBucket(ImmutableList.copyOf(files));
     }
+
+    public int size() {
+        return files.size();
+    }
 }

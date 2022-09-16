@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static java.util.Comparator.comparing;
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
 public class FileItemSizeSorter implements Consumer<FileItem> {
@@ -41,6 +43,7 @@ public class FileItemSizeSorter implements Consumer<FileItem> {
     public Iterable<FileBucket> getSizeBuckets() {
         return files.values().stream()
                 .map(MutableFileBucket::toImmutable)
+                .sorted(comparing(FileBucket::fileSize))
                 .collect(Collectors.toList());
     }
 }
