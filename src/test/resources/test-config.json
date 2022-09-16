@@ -6,5 +6,7 @@
   "ignore": [
     "testdir/root2/f",
     "c"
-  ]
+  ],
+  "maxOpenFiles": 20,
+  "bufferSize": 8
 }

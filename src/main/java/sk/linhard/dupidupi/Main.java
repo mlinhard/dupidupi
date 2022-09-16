@@ -36,7 +36,7 @@ public class Main implements Callable<Integer> {
             }
             Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
             Deduper deduper = new Deduper();
-            var results = deduper.run(w);
+            var results = deduper.run(w, config.getMaxOpenFiles(), config.getBufferSize());
             return 0;
         } catch (Exception e) {
             log.error("ERROR: {}", e.getMessage(), e);

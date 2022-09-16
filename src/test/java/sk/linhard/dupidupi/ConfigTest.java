@@ -20,5 +20,7 @@ public class ConfigTest {
         assertEquals(2, cfg.getIgnore().size());
         assertEquals("testdir/root2/f", cfg.getIgnore().get(0));
         assertEquals("c", cfg.getIgnore().get(1));
+        assertEquals(20, cfg.getMaxOpenFiles());
+        assertEquals(8, cfg.getBufferSize());
     }
 }

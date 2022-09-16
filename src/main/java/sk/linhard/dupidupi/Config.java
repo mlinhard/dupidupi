@@ -19,6 +19,8 @@ import static lombok.AccessLevel.PRIVATE;
 public class Config {
     List<String> roots = new ArrayList<>();
     List<String> ignore = new ArrayList<>();
+    int maxOpenFiles = 100;
+    int bufferSize = 256;
 
     public List<Path> getRootPaths() {
         return roots.stream()

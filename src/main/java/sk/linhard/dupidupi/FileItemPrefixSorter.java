@@ -13,6 +13,7 @@ import java.util.LinkedList;
 public class FileItemPrefixSorter {
 
     final ResultRepository resultRepository;
+    final FileChannelRepository fileChannelRepository;
 
     public void sort(FileBucket bucket) {
         if (bucket.isSingleton()) {
@@ -35,7 +36,7 @@ public class FileItemPrefixSorter {
         FileItemPrefixReader[] readers = new FileItemPrefixReader[bucket.getFiles().size()];
         int i = 0;
         for (FileItem item : bucket.getFiles()) {
-            readers[i++] = new FileItemPrefixReader(item);
+            readers[i++] = new FileItemPrefixReader(item, fileChannelRepository);
         }
         return new PrefixSortTask(0L, readers);
     }
