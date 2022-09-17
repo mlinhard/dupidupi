@@ -22,6 +22,7 @@ public class Config {
     int maxOpenFiles = 100;
     int bufferSize = 256;
     String report;
+    ReportType reportType = ReportType.JSON;
 
     public List<Path> getRootPaths() {
         return roots.stream()
@@ -44,5 +45,11 @@ public class Config {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public enum ReportType {
+        JSON,
+        TEXT,
+        HTML
     }
 }

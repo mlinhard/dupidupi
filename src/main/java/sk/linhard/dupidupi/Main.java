@@ -41,9 +41,9 @@ public class Main implements Callable<Integer> {
                     results.numDuplicates(), results.duplicates().size(), results.bytesDuplicated());
 
             log.info("Generating duplicate report to {}", config.getReport());
-            var reportGenerator = new ReportGenerator(config.getReport(), results);
-            reportGenerator.run();
-
+            ReportGenerator.Factory
+                    .create(config.getReportType(), config.getReport(), results)
+                    .generate();
             return 0;
         } catch (Exception e) {
             log.error("ERROR: {}", e.getMessage(), e);

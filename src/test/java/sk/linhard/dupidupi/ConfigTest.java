@@ -23,5 +23,7 @@ public class ConfigTest {
         assertEquals(20, cfg.getMaxOpenFiles());
         assertEquals(8, cfg.getBufferSize());
         assertEquals("output.html", cfg.getReport());
+        assertEquals(Config.ReportType.HTML, cfg.getReportType());
     }
 }
+

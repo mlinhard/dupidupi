@@ -1,5 +1,7 @@
 package sk.linhard.dupidupi;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -15,14 +17,17 @@ public class ResultRepository {
         duplicates.add(duplicateBucket);
     }
 
+    @JsonProperty
     public List<FileBucket> duplicates() {
         return duplicates;
     }
 
+    @JsonIgnore
     public int numDuplicates() {
         return duplicates.stream().mapToInt(b -> b.size() - 1).sum();
     }
 
+    @JsonIgnore
     public long bytesDuplicated() {
         return duplicates.stream().mapToLong(b -> b.duplicatedBytes()).sum();
     }
