@@ -1,10 +1,16 @@
 package sk.linhard.dupidupi;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -46,4 +52,24 @@ public class FileItemSizeSorter implements Consumer<FileItem> {
                 .sorted(comparing(FileBucket::fileSize))
                 .collect(Collectors.toList());
     }
+
+    public void dumpJsonl(String file) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            SimpleModule module = new SimpleModule();
+            module.addSerializer(FileBucket.class, new FileBucketSerializer(FileBucket.class));
+            objectMapper.registerModule(module);
+            try (FileOutputStream fileOut = new FileOutputStream(file);
+                 SequenceWriter seq = objectMapper.writer()
+                         .withRootValueSeparator("\n") // Important! Default value separator is single space
+                         .writeValues(fileOut)) {
+                for (FileBucket sizeBucket : getSizeBuckets()) {
+                    seq.write(sizeBucket);
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
 }

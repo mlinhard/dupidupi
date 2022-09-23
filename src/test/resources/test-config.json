@@ -10,5 +10,6 @@
   "maxOpenFiles": 20,
   "bufferSize": 8,
   "report": "output.html",
-  "reportType": "HTML"
+  "reportType": "HTML",
+  "filesReport": "files.json"
 }

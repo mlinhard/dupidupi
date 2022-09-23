@@ -24,6 +24,7 @@ public class ConfigTest {
         assertEquals(8, cfg.getBufferSize());
         assertEquals("output.html", cfg.getReport());
         assertEquals(Config.ReportType.HTML, cfg.getReportType());
+        assertEquals("files.json", cfg.getFilesReport());
     }
 }
 

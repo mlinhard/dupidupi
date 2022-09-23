@@ -7,11 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Deduper {
 
-    public ResultRepository run(Walker walker, int maxOpenFiles, int bufferSize) {
+    public ResultRepository run(Walker walker, int maxOpenFiles, int bufferSize, String filesReport) {
         FileItemSizeSorter sizeSorter = new FileItemSizeSorter();
         walker.run(sizeSorter);
         int n = sizeSorter.numSizeBuckets();
         log.info("Found {} files with {} different sizes", sizeSorter.getCount(), n);
+
+        if (filesReport != null) {
+            log.info("Writing file report to {}", filesReport);
+            sizeSorter.dumpJsonl(filesReport);
+        }
 
         FileChannelRepository fileChannelRepository = new FileChannelRepository(maxOpenFiles, bufferSize);
         ResultRepository resultRepository = new ResultRepository();

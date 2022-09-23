@@ -36,7 +36,8 @@ public class Main implements Callable<Integer> {
             }
             Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
             Deduper deduper = new Deduper();
-            var results = deduper.run(w, config.getMaxOpenFiles(), config.getBufferSize());
+            var results = deduper.run(w, config.getMaxOpenFiles(),
+                    config.getBufferSize(), config.getFilesReport());
             log.info("Done sorting. Found {} duplicates in {} duplicate sets, total {} bytes duplicated",
                     results.numDuplicates(), results.duplicates().size(), results.bytesDuplicated());
 

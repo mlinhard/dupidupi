@@ -22,6 +22,7 @@ public class Config {
     int maxOpenFiles = 100;
     int bufferSize = 256;
     String report;
+    String filesReport;
     ReportType reportType = ReportType.JSON;
 
     public List<Path> getRootPaths() {
