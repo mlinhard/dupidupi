@@ -3,6 +3,8 @@ package sk.linhard.dupidupi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Slf4j
 public class Deduper {
@@ -14,8 +16,12 @@ public class Deduper {
         log.info("Found {} files with {} different sizes", sizeSorter.getCount(), n);
 
         if (filesReport != null) {
+//            List<FileBucket> existingBuckets = FileBucketSerializationUtil.readJsonl(filesReport);
+//            if (existingBuckets != null) {
+//                log.info("File report already exists");
+//            }
             log.info("Writing file report to {}", filesReport);
-            sizeSorter.dumpJsonl(filesReport);
+            FileBucketSerializationUtil.writeJsonl(filesReport, sizeSorter.getSizeBuckets());
         }
 
         FileChannelRepository fileChannelRepository = new FileChannelRepository(maxOpenFiles, bufferSize);
@@ -32,4 +38,5 @@ public class Deduper {
         }
         return resultRepository;
     }
+
 }
