@@ -1,7 +1,9 @@
 package sk.linhard.dupidupi;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -14,16 +16,22 @@ import static sk.linhard.dupidupi.ResourceUtil.resPath;
 public class DeduperTest {
 
     @Test
-    void run() {
+    void run(@TempDir File tempDir) {
         Walker walker = new Walker(
                 List.of(Path.of(resPath("testdir/example"))),
                 List.of());
 
+        FileItemSizeSorter sizeSorter = new FileItemSizeSorter();
+        walker.run(sizeSorter);
         Deduper deduper = new Deduper();
-        ResultRepository results = deduper.run(walker, new Config()
-                .setOutputDir("target/output")
+
+        var config = new Config()
+                .setOutputDir(tempDir.getAbsolutePath())
                 .setMaxOpenFiles(10)
-                .setBufferSize(32));
+                .setBufferSize(32);
+
+        var results = deduper.run(sizeSorter, config);
+
         List<FileBucket> duplicates = results.duplicates();
 
         assertThat(duplicates).hasSize(3);

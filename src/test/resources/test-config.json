@@ -10,5 +10,6 @@
   "maxOpenFiles": 20,
   "bufferSize": 8,
   "outputDir": "output-data",
-  "reportType": "HTML"
+  "reportType": "HTML",
+  "resumable": true
 }

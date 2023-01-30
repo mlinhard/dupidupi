@@ -27,6 +27,7 @@ public class Config {
     int bufferSize = 256;
     String outputDir = "output";
     boolean walkOnly = false;
+    boolean resumable = false;
     ReportType reportType = ReportType.JSON;
 
     public List<Path> getRootPaths() {
@@ -58,6 +59,18 @@ public class Config {
             throw new RuntimeException("Couldn't create output directory " + outputDir.getAbsolutePath());
         }
         return outputDir;
+    }
+
+    public File walkFilePath() {
+        return new File(ensureOutputDir(), "walk.tsv.gz");
+    }
+
+    public File progressLogPath() {
+        return new File(ensureOutputDir(), "progress-log.tsv");
+    }
+
+    public File progressLogInputPath() {
+        return new File(ensureOutputDir(), "progress-log-input.tsv");
     }
 
     @FieldDefaults(level = PRIVATE, makeFinal = true)

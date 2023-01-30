@@ -1,6 +1,5 @@
 package sk.linhard.dupidupi;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -27,7 +26,7 @@ public class WalkFileSerializerTest {
         var sorted2 = serializer.load(walkFile);
 
         assertThat(sorted2.numSizeBuckets()).isEqualTo(3);
-        assertThat(sorted2.getCount()).isEqualTo(6);
+        assertThat(sorted2.numFiles()).isEqualTo(6);
         var buckets = StreamSupport.stream(sorted2.getSizeBuckets().spliterator(), false).collect(Collectors.toList());
         assertThat(buckets.size()).isEqualTo(3);
         var b10 = buckets.get(0);

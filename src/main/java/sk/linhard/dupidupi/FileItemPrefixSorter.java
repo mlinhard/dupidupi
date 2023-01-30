@@ -12,7 +12,7 @@ import java.util.LinkedList;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FileItemPrefixSorter {
 
-    final ResultRepository resultRepository;
+    final ProgressLogWriter progressLog;
     final FileChannelRepository fileChannelRepository;
 
     public void sort(FileBucket bucket) {
@@ -22,7 +22,7 @@ public class FileItemPrefixSorter {
         long fileSize = bucket.fileSize();
         if (fileSize == 0L) {
             // files with zero size are trivial duplicates
-            resultRepository.addDuplicateBucket(bucket);
+            progressLog.addDuplicateBucket(bucket);
             return;
         }
         LinkedList<PrefixSortTask> sortTasks = new LinkedList<>();
@@ -46,7 +46,7 @@ public class FileItemPrefixSorter {
             return;
         }
         if (task.fileSize() == task.prefixLength) {
-            resultRepository.addDuplicateBucket(task.toBucket());
+            progressLog.addDuplicateBucket(task.toBucket());
             return;
         }
         var readersByNextByte = new HashMap<Integer, LinkedList<FileItemPrefixReader>>();

@@ -41,8 +41,15 @@ public class Main implements Callable<Integer> {
                 log.info("  " + ignore);
             }
             Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
+
+            FileItemSizeSorter sizeSorter = new FileItemSizeSorter();
+            w.run(sizeSorter);
+            int n = sizeSorter.numSizeBuckets();
+            log.info("Found {} files with {} different sizes", sizeSorter.numFiles(), n);
+
             Deduper deduper = new Deduper();
-            var results = deduper.run(w, config);
+            var results = deduper.run(sizeSorter, config);
+
             log.info("Done sorting. Found {} duplicates in {} duplicate sets, total {} bytes duplicated",
                     results.numDuplicates(), results.duplicates().size(), results.bytesDuplicated());
 
@@ -55,4 +62,6 @@ public class Main implements Callable<Integer> {
             return 1;
         }
     }
+
+
 }

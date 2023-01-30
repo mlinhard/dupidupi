@@ -1,19 +1,13 @@
 package sk.linhard.dupidupi;
 
-import com.google.common.base.Charsets;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -23,13 +17,12 @@ import static java.util.Comparator.comparing;
 @Slf4j
 public class FileItemSizeSorter implements Consumer<FileItem> {
 
-    @Getter
-    long count = 0l;
+    long fileCount = 0l;
     Map<Long, MutableFileBucket> files = new HashMap<>();
 
     @Override
     public void accept(FileItem fileItem) {
-        count++;
+        fileCount++;
         files.compute(fileItem.getSize(), (k, existingBucket) -> {
             if (existingBucket == null) {
                 return new MutableFileBucket(fileItem);
@@ -38,9 +31,26 @@ public class FileItemSizeSorter implements Consumer<FileItem> {
                 return existingBucket;
             }
         });
-        if (count % 10_000L == 0) {
-            log.info("Count {}", count);
+        if (fileCount % 10_000L == 0) {
+            log.info("Count {}", fileCount);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FileItemSizeSorter that = (FileItemSizeSorter) o;
+        return fileCount == that.fileCount && Objects.equals(files, that.files);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileCount, files);
+    }
+
+    public long numFiles() {
+        return fileCount;
     }
 
     public int numSizeBuckets() {
@@ -52,5 +62,11 @@ public class FileItemSizeSorter implements Consumer<FileItem> {
                 .map(MutableFileBucket::toImmutable)
                 .sorted(comparing(FileBucket::fileSize))
                 .collect(Collectors.toList());
+    }
+
+    public Set<Long> getBucketFileSizes() {
+        return files.values().stream()
+                .map(MutableFileBucket::fileSize)
+                .collect(Collectors.toSet());
     }
 }

@@ -24,6 +24,7 @@ public class ConfigTest {
         assertEquals(8, cfg.getBufferSize());
         assertEquals("output-data", cfg.getOutputDir());
         assertEquals(false, cfg.isWalkOnly());
+        assertEquals(true, cfg.isResumable());
         assertEquals(Config.ReportType.HTML, cfg.getReportType());
     }
 }

@@ -9,12 +9,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ResultRepository {
+public class ResultRepository implements ProgressLog {
 
     LinkedList<FileBucket> duplicates = new LinkedList<>();
 
+    @Override
     public void addDuplicateBucket(FileBucket duplicateBucket) {
         duplicates.add(duplicateBucket);
+    }
+
+    @Override
+    public void addSizeBucketCompletion(long bucketSize) {
+        // we don't care about this here
     }
 
     @JsonProperty

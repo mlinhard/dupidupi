@@ -1,23 +1,13 @@
 # Dupi-Dupi filesystem de-duplicator
 
-A deduplication tool that uses md5 hashes to detect duplicates
+File deduplication tool that uses byte-to-byte comparison to detect duplicate file in a set of file system subtrees.
 
-# Next steps
+## Dupi-Dupi deduplication algorithm
 
-- save walk file
-- rewalk and compare
-
-
-
-
-
-
-# Dupi-Dupi deduplication algorithm
-
-When discriminating whether two files are equal by content Dupi-dupi first looks at their size. When sizes aren't equal 
-then the files aren't equal. This is an important property that allows us to sort files to classes with different file sizes
-where we can be sure that a file from one size-class is definitely different from file from another size-class.
-If a size class contains a single file, this means that this file is unique - it doesn't have duplicates.
+When discriminating whether two files are equal by content Dupi-dupi first looks at their size. When sizes aren't equal
+then the files aren't equal. This is an important property that allows us to sort files to classes with different file
+sizes where we can be sure that a file from one size-class is definitely different from file from another size-class. If
+a size class contains a single file, this means that this file is unique - it doesn't have duplicates.
 
 If there are multiple
 
@@ -36,7 +26,7 @@ Let's say we have following set of text files
 | 09.txt |    2 | 'bc'    |
 | 10.txt |    3 | 'abc'   |
 
-With duplicates 
+With duplicates
 
 - 01.txt - 02.txt
 - 03.txt - 04.txt
@@ -56,8 +46,8 @@ From this first sort we already have some results:
 - All size-0 files are trivial duplicates.
 - All size buckets with single member represent unique files
 
-So we add size-0 objects to list of duplicates, prune the singleton buckets
-and search further inside of size 1 and 2 buckets
+So we add size-0 objects to list of duplicates, prune the singleton buckets and search further inside of size 1 and 2
+buckets
 
 | # | Duplicate set  |
 |---|----------------|
@@ -72,9 +62,8 @@ In these left-over buckets, we'll look at the prefixes of length 1
 |    2 | a        | 06.txt, 07.txt |               |
 |      | b        | 08.txt, 09.txt |               |
 
-Here again we found one pair of duplicates 03.txt-04.txt because
-actually by seeing prefix of length 1 we saw the whole file length
-and also we have another unique file 05.txt to prune
+Here again we found one pair of duplicates 03.txt-04.txt because actually by seeing prefix of length 1 we saw the whole
+file length and also we have another unique file 05.txt to prune
 
 | # | Duplicate set  |
 |---|----------------|
@@ -97,7 +86,17 @@ Result
 | 1 | 03.txt, 04.txt |
 | 2 | 08.txt, 09.txt |
 
+## Resuming interrupted deduplication process
 
+When deduplicating a lot of data it may be handy to be able to restore the deduplication process from a saved
+checkpoint. At this point only the size bucket checkpoints are supported. The restore feature is enabled in config file
+by setting `resumable` field to `true`.
 
+For this purpose the process will create three files in the output directory
+
+- walk.tsv.gz - Walk file - information about all files we're considering
+- progress-log.tsv - Progress log - stores intermediate deduplication progress
+- progress-log.tsv.processing - A copy of progress log that is currently being processed by restore mechanism
+- 
 
 

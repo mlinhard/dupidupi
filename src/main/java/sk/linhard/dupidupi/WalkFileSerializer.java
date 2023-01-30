@@ -13,7 +13,6 @@ import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-// TODO implement storage and loading from GZipped TSV file, then comparison of file
 public class WalkFileSerializer {
 
     public void store(FileItemSizeSorter sizeBuckets, File walkFile) {

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.util.LinkedList;
+import java.util.Objects;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -37,5 +38,18 @@ public class MutableFileBucket implements FileBucket {
 
     public int size() {
         return files.size();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MutableFileBucket that = (MutableFileBucket) o;
+        return Objects.equals(files, that.files);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(files);
     }
 }
