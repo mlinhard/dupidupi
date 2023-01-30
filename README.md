@@ -2,7 +2,10 @@
 
 A deduplication tool that uses md5 hashes to detect duplicates
 
+# Next steps
 
+- save walk file
+- rewalk and compare
 
 
 

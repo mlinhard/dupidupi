@@ -1,10 +1,17 @@
 package sk.linhard.dupidupi;
 
+import com.google.common.base.Charsets;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
@@ -24,7 +25,7 @@ import static java.util.Collections.sort;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HtmlReportGenerator implements ReportGenerator {
 
-    String reportPath;
+    File reportPath;
     ResultRepository results;
 
     public void generate() {

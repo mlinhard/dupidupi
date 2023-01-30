@@ -17,6 +17,9 @@ public class Main implements Callable<Integer> {
     @Option(names = {"-c", "--config"}, paramLabel = "CONFIG", description = "the configuration file", required = true)
     File configFile;
 
+    @Option(names = {"-w", "--walk-only"}, description = "Only walk the file system")
+    Boolean walkOnly;
+
     public static void main(String... args) {
         int exitCode = new CommandLine(new Main()).execute(args);
         System.exit(exitCode);
@@ -26,6 +29,9 @@ public class Main implements Callable<Integer> {
     public Integer call() {
         try {
             var config = Config.load(configFile);
+            if (walkOnly != null) {
+                config.setWalkOnly(walkOnly);
+            }
             log.info("Looking for files in");
             for (var root : config.getRoots()) {
                 log.info("  " + root);
@@ -36,15 +42,13 @@ public class Main implements Callable<Integer> {
             }
             Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
             Deduper deduper = new Deduper();
-            var results = deduper.run(w, config.getMaxOpenFiles(),
-                    config.getBufferSize(), config.getFilesReport());
+            var results = deduper.run(w, config);
             log.info("Done sorting. Found {} duplicates in {} duplicate sets, total {} bytes duplicated",
                     results.numDuplicates(), results.duplicates().size(), results.bytesDuplicated());
 
-            log.info("Generating duplicate report to {}", config.getReport());
-            ReportGenerator.Factory
-                    .create(config.getReportType(), config.getReport(), results)
-                    .generate();
+            File reportFile = new File(config.ensureOutputDir(), "report" + config.getReportType().getExtension());
+            log.info("Generating duplicate report to {}", reportFile);
+            ReportGenerator.Factory.create(config.getReportType(), reportFile, results).generate();
             return 0;
         } catch (Exception e) {
             log.error("ERROR: {}", e.getMessage(), e);

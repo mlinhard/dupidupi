@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -15,7 +16,7 @@ import java.io.UncheckedIOException;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class JsonReportGenerator implements ReportGenerator {
 
-    String reportPath;
+    File reportPath;
     ResultRepository results;
 
     public void generate() {

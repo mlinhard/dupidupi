@@ -25,9 +25,9 @@ public class FileBucketSerializationUtilTest {
 
         assertThat(fileBuckets).hasSize(2);
         assertThat(fileBuckets.get(0).fileSize()).isEqualTo(10l);
-        assertThat(fileBuckets.get(0).getPaths()).containsExactly("a.txt", "b.txt");
+        assertThat(fileBuckets.get(0).getSortedPaths()).containsExactly("a.txt", "b.txt");
         assertThat(fileBuckets.get(1).fileSize()).isEqualTo(12);
-        assertThat(fileBuckets.get(1).getPaths()).containsExactly("c.txt", "d.txt", "e.txt");
+        assertThat(fileBuckets.get(1).getSortedPaths()).containsExactly("c.txt", "d.txt", "e.txt");
     }
 
     @Test

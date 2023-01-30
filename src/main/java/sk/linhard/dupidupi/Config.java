@@ -1,7 +1,10 @@
 package sk.linhard.dupidupi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
 import java.io.File;
@@ -16,13 +19,14 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Data
 @FieldDefaults(level = PRIVATE)
+@Accessors(chain = true)
 public class Config {
     List<String> roots = new ArrayList<>();
     List<String> ignore = new ArrayList<>();
     int maxOpenFiles = 100;
     int bufferSize = 256;
-    String report;
-    String filesReport;
+    String outputDir = "output";
+    boolean walkOnly = false;
     ReportType reportType = ReportType.JSON;
 
     public List<Path> getRootPaths() {
@@ -48,9 +52,23 @@ public class Config {
         }
     }
 
+    public File ensureOutputDir() {
+        File outputDir = new File(this.outputDir);
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
+            throw new RuntimeException("Couldn't create output directory " + outputDir.getAbsolutePath());
+        }
+        return outputDir;
+    }
+
+    @FieldDefaults(level = PRIVATE, makeFinal = true)
+    @AllArgsConstructor
     public enum ReportType {
-        JSON,
-        TEXT,
-        HTML
+        JSON(".json"),
+        TEXT(".txt"),
+        HTML(".html"),
+        TSV(".tsv.gz");
+
+        @Getter
+        String extension;
     }
 }

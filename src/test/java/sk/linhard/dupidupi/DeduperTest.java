@@ -20,7 +20,10 @@ public class DeduperTest {
                 List.of());
 
         Deduper deduper = new Deduper();
-        ResultRepository results = deduper.run(walker, 10, 32, null);
+        ResultRepository results = deduper.run(walker, new Config()
+                .setOutputDir("target/output")
+                .setMaxOpenFiles(10)
+                .setBufferSize(32));
         List<FileBucket> duplicates = results.duplicates();
 
         assertThat(duplicates).hasSize(3);

@@ -1,4 +1,3 @@
 /target/
 /.idea/
-files.jsonl
-report.json
+/testdata/

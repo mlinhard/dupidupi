@@ -25,9 +25,10 @@ public interface FileBucket {
     }
 
     @JsonProperty("files")
-    default List<String> getPaths() {
+    default List<String> getSortedPaths() {
         return getFiles().stream()
                 .map(FileItem::getPath)
+                .sorted()
                 .collect(Collectors.toList());
     }
 }
