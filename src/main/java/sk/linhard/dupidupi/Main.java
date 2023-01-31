@@ -47,8 +47,7 @@ public class Main implements Callable<Integer> {
             int n = sizeSorter.numSizeBuckets();
             log.info("Found {} files with {} different sizes", sizeSorter.numFiles(), n);
 
-            Deduper deduper = new Deduper();
-            var results = deduper.run(sizeSorter, config);
+            var results = new Deduper(sizeSorter, config).run();
 
             log.info("Done sorting. Found {} duplicates in {} duplicate sets, total {} bytes duplicated",
                     results.numDuplicates(), results.duplicates().size(), results.bytesDuplicated());

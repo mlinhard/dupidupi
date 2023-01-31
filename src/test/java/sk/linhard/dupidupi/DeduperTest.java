@@ -23,14 +23,14 @@ public class DeduperTest {
 
         FileItemSizeSorter sizeSorter = new FileItemSizeSorter();
         walker.run(sizeSorter);
-        Deduper deduper = new Deduper();
 
         var config = new Config()
+                .setResumable(false)
                 .setOutputDir(tempDir.getAbsolutePath())
                 .setMaxOpenFiles(10)
                 .setBufferSize(32);
 
-        var results = deduper.run(sizeSorter, config);
+        var results = new Deduper(sizeSorter, config).run();
 
         List<FileBucket> duplicates = results.duplicates();
 

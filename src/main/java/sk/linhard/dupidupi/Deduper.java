@@ -1,50 +1,69 @@
 package sk.linhard.dupidupi;
 
 import com.google.common.io.Files;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
 public class Deduper {
 
+    final FileItemSizeSorter sizeSorter;
+    final Config config;
+    ResultRepository resultRepository;
 
-    public ResultRepository run(FileItemSizeSorter sizeSorter, Config config) {
+    public ResultRepository run() {
         try {
-            var restorable = resumeProgress(sizeSorter, config);
-
-            // TODO here when there is stuff to restore from and it's wanted
-            // create real reader
-            // otherwise create a empty progress reader
-            // if there is a need to store progress then create a real writer
-            // otherwise create
-
-            if (restorable) {
-                try (var progressLogReader = new ProgressLogReader(config.progressLogInputPath())) {
-                    runInternal(sizeSorter, config);
-                }
-            } else {
-                runInternal(sizeSorter, config);
+            try (var pLogReader = createProgressLogInput();
+                 var pLogWriter = createProgressLog()) {
+                runInternal(pLogReader, pLogWriter);
             }
-
-            var finishedLogReader = new ProgressLogReader(config.progressLogPath());
-            return finishedLogReader.parseResultsFromFinishedLog(sizeSorter.getBucketFileSizes());
+            return createResultRepository();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private void runInternal(FileItemSizeSorter sizeSorter, Config config) {
+    private ResultRepository createResultRepository() {
+        if (resultRepository != null) {
+            return resultRepository;
+        } else {
+            var finishedLogReader = new ProgressLogReader(config.progressLogPath());
+            return finishedLogReader.parseResultsFromFinishedLog(sizeSorter.getBucketFileSizes());
+        }
+    }
+
+    private ProgressLogInput createProgressLogInput() throws IOException {
+        var canUseSavedProgressLog = resumeProgress();
+        if (canUseSavedProgressLog && config.isResumable()) {
+            return new ProgressLogReader(config.progressLogInputPath());
+        } else {
+            return new EmptyProgressLogInput();
+        }
+    }
+
+    private ProgressLog createProgressLog() {
+        if (config.isResumable()) {
+            return new ProgressLogWriter(config.progressLogPath());
+        } else {
+            resultRepository = new ResultRepository();
+            return resultRepository;
+        }
+    }
+
+    private void runInternal(ProgressLogInput pLogReader, ProgressLog pLogWriter) {
         int n = sizeSorter.numSizeBuckets();
 
-        try (var fileChannelRepository = new FileChannelRepository(config.getMaxOpenFiles(), config.getBufferSize());
-             var progressLogWriter = new ProgressLogWriter(config.progressLogPath())) {
+        try (var fileChannelRepository = new FileChannelRepository(config.getMaxOpenFiles(), config.getBufferSize())) {
 
-            var prefixSorter = new FileItemPrefixSorter(progressLogWriter, fileChannelRepository);
+            var prefixSorter = new FileItemPrefixSorter(pLogWriter, fileChannelRepository);
 
             int i = 1;
             for (FileBucket sizeBucket : sizeSorter.getSizeBuckets()) {
@@ -52,17 +71,14 @@ public class Deduper {
                     log.info("Sorting size-{} bucket with {} files ({}/{})", sizeBucket.fileSize(), sizeBucket.size(), i, n);
                 }
                 prefixSorter.sort(sizeBucket);
-                progressLogWriter.addSizeBucketCompletion(sizeBucket.fileSize());
+                pLogWriter.addSizeBucketCompletion(sizeBucket.fileSize());
                 i++;
             }
         }
     }
 
-    private boolean resumeProgress(FileItemSizeSorter sizeSorter, Config config) throws IOException {
-        if (!config.isResumable()) {
-            return false;
-        }
-        var walkFilesMatch = compareOrCreateWalkFiles(sizeSorter, config);
+    private boolean resumeProgress() throws IOException {
+        var walkFilesMatch = compareOrCreateWalkFiles();
 
         File progressLogInputPath = config.progressLogInputPath();
         if (walkFilesMatch) {
@@ -74,7 +90,7 @@ public class Deduper {
         }
     }
 
-    private boolean compareOrCreateWalkFiles(FileItemSizeSorter sizeSorter, Config config) {
+    private boolean compareOrCreateWalkFiles() {
         WalkFileSerializer wfs = new WalkFileSerializer();
         File walkFile = config.walkFilePath();
         if (walkFile.exists()) {
@@ -88,6 +104,13 @@ public class Deduper {
             log.debug("Storing walk file {}", walkFile.getAbsolutePath());
             wfs.store(sizeSorter, walkFile);
             return false;
+        }
+    }
+
+    private static class EmptyProgressLogInput implements ProgressLogInput {
+        @Override
+        public ProcessedSizeBucket nextProcessedSizeBucket() {
+            return null;
         }
     }
 }

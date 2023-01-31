@@ -27,4 +27,9 @@ public class ImmutableFileBucket implements FileBucket {
     public int size() {
         return files.size();
     }
+
+    @Override
+    public String toString() {
+        return "ImmutableFileBucket{" + files + '}';
+    }
 }

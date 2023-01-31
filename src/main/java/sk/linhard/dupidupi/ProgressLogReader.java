@@ -13,14 +13,17 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
-public class ProgressLogReader implements AutoCloseable {
+public class ProgressLogReader implements ProgressLogInput {
 
     final File progressLog;
     BufferedReader reader;
@@ -28,10 +31,22 @@ public class ProgressLogReader implements AutoCloseable {
     Integer currentBucketId;
 
     public ResultRepository parseResultsFromFinishedLog(Set<Long> sizesToCheck) {
+        Set<Long> remainingSizes = new HashSet<>(sizesToCheck);
+        ResultRepository resultRepository = new ResultRepository();
+        ProcessedSizeBucket sizeBucket;
+        while ((sizeBucket = nextProcessedSizeBucket()) != null) {
+            for (FileBucket fileBucket : sizeBucket) {
+                resultRepository.addDuplicateBucket(fileBucket);
+            }
+            checkState(remainingSizes.remove(sizeBucket.fileSize()), "inconsistent log, unexpected size bucket size " + sizeBucket.fileSize());
+        }
+        checkState(remainingSizes.isEmpty(), "inconsistent log, remaining " + remainingSizes.size() + " unprocessed size-buckets");
+        return resultRepository;
+    }
+
+    public ProcessedSizeBucket nextProcessedSizeBucket() {
         try {
-            Set<Long> remainingSizes = new HashSet<>(sizesToCheck);
-            ensureReader();
-            ResultRepository resultRepository = new ResultRepository();
+            List<MutableFileBucket> duplicates = new LinkedList<>();
             Item item;
             int lineNum = 1;
             while ((item = nextItem()) != null) {
@@ -50,26 +65,27 @@ public class ProgressLogReader implements AutoCloseable {
                     case DONE_D -> {
                         checkState(item.bucketId == currentBucketId, "inconsistent log on line " + lineNum);
                         checkState(currentBucketCandidate != null, "inconsistent log on line " + lineNum);
-                        resultRepository.addDuplicateBucket(currentBucketCandidate);
+                        duplicates.add(currentBucketCandidate);
                         currentBucketCandidate = null;
                     }
                     case DONE_S -> {
-                        checkState(remainingSizes.remove(item.fileSize), "inconsistent log, unexpected size bucket size " + item.fileSize + " on line " + lineNum);
+                        checkState(currentBucketCandidate == null, "inconsistent log on line " + lineNum);
+                        return new ProcessedSizeBucket(item.fileSize, duplicates.stream()
+                                .map(MutableFileBucket::toImmutable)
+                                .collect(toImmutableList()));
                     }
                     default -> throw new IllegalStateException("unknown item type");
                 }
                 lineNum++;
             }
-
-            checkState(remainingSizes.isEmpty(), "inconsistent log, remaining " + remainingSizes.size() + " unprocessed size-buckets");
-
-            return resultRepository;
+            return null;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     private Item nextItem() throws IOException {
+        ensureReader();
         var nextLine = reader.readLine();
         return nextLine == null ? null : parseItem(nextLine);
     }
@@ -89,7 +105,9 @@ public class ProgressLogReader implements AutoCloseable {
     }
 
     private void ensureReader() throws IOException {
-        reader = new BufferedReader(new InputStreamReader(new FileInputStream(progressLog), StandardCharsets.UTF_8));
+        if (reader == null) {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(progressLog), StandardCharsets.UTF_8));
+        }
     }
 
     @Override

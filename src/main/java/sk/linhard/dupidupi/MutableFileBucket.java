@@ -52,4 +52,9 @@ public class MutableFileBucket implements FileBucket {
     public int hashCode() {
         return Objects.hash(files);
     }
+
+    @Override
+    public String toString() {
+        return "MutableFileBucket{" + files + '}';
+    }
 }

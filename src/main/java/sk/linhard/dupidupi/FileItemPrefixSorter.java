@@ -12,7 +12,7 @@ import java.util.LinkedList;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FileItemPrefixSorter {
 
-    final ProgressLogWriter progressLog;
+    final ProgressLog progressLog;
     final FileChannelRepository fileChannelRepository;
 
     public void sort(FileBucket bucket) {
