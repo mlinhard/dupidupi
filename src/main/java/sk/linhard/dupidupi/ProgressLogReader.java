@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +45,12 @@ public class ProgressLogReader implements ProgressLogInput {
         return resultRepository;
     }
 
-    public ProcessedSizeBucket nextProcessedSizeBucket() {
+    @Override
+    public Iterator<ProcessedSizeBucket> iterator() {
+        return new ProcessedSizeBucketIterator();
+    }
+
+    ProcessedSizeBucket nextProcessedSizeBucket() {
         try {
             List<MutableFileBucket> duplicates = new LinkedList<>();
             Item item;
@@ -134,5 +140,21 @@ public class ProgressLogReader implements ProgressLogInput {
         Integer bucketId;
         Long fileSize;
         String path;
+    }
+
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    private class ProcessedSizeBucketIterator implements Iterator<ProcessedSizeBucket> {
+
+        ProcessedSizeBucket next = ProgressLogReader.this.nextProcessedSizeBucket();
+
+        @Override
+        public boolean hasNext() {
+            return next != null;
+        }
+
+        @Override
+        public ProcessedSizeBucket next() {
+            return next = ProgressLogReader.this.nextProcessedSizeBucket();
+        }
     }
 }

@@ -9,6 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Iterator;
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkState;
+import static sk.linhard.dupidupi.ErrorFormatter.format;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -65,14 +70,26 @@ public class Deduper {
 
             var prefixSorter = new FileItemPrefixSorter(pLogWriter, fileChannelRepository);
 
+            var allSizeBuckets = sizeSorter.getSizeBuckets().iterator();
+            var allProcessedSizeBuckets = pLogReader.iterator();
+
             int i = 1;
-            for (FileBucket sizeBucket : sizeSorter.getSizeBuckets()) {
-                if (!sizeBucket.isSingleton() && sizeBucket.fileSize() != 0) {
-                    log.info("Sorting size-{} bucket with {} files ({}/{})", sizeBucket.fileSize(), sizeBucket.size(), i, n);
+            while (allSizeBuckets.hasNext()) {
+                var sizeBucket = allSizeBuckets.next();
+                if (allProcessedSizeBuckets.hasNext()) {
+                    var processedSizeBucket = allProcessedSizeBuckets.next();
+                    checkState(processedSizeBucket.fileSize() == sizeBucket.fileSize(),
+                            format("The {}. processed size bucket file size {} doesn't correspond to expected {}",
+                                    i, processedSizeBucket.fileSize(), sizeBucket.fileSize()));
+                    log.info("Skipping size-{} bucket with {} files ({}/{})", sizeBucket.fileSize(), sizeBucket.size(), i, n);
+                } else {
+                    if (!sizeBucket.isSingleton() && sizeBucket.fileSize() != 0) {
+                        log.info("Sorting size-{} bucket with {} files ({}/{})", sizeBucket.fileSize(), sizeBucket.size(), i, n);
+                    }
+                    prefixSorter.sort(sizeBucket);
+                    pLogWriter.addSizeBucketCompletion(sizeBucket.fileSize());
+                    i++;
                 }
-                prefixSorter.sort(sizeBucket);
-                pLogWriter.addSizeBucketCompletion(sizeBucket.fileSize());
-                i++;
             }
         }
     }
@@ -109,8 +126,8 @@ public class Deduper {
 
     private static class EmptyProgressLogInput implements ProgressLogInput {
         @Override
-        public ProcessedSizeBucket nextProcessedSizeBucket() {
-            return null;
+        public Iterator<ProcessedSizeBucket> iterator() {
+            return List.<ProcessedSizeBucket>of().iterator();
         }
     }
 }
