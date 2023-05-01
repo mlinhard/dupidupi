@@ -126,7 +126,7 @@ public class DeduperTest {
 
     private List<String> filePaths(FileBucket bucket) {
         return bucket.getFiles().stream()
-                .map(FileItem::getPath)
+                .map(FileItem::path)
                 .collect(Collectors.toList());
     }
 }

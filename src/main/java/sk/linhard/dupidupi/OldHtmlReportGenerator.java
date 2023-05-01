@@ -23,7 +23,7 @@ import static java.util.Collections.sort;
 @Slf4j
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class HtmlReportGenerator implements ReportGenerator {
+public class OldHtmlReportGenerator implements ReportGenerator {
 
     File reportPath;
     ResultRepository results;
@@ -37,9 +37,9 @@ public class HtmlReportGenerator implements ReportGenerator {
         for (FileBucket duplicate : duplicates) {
             PrintBucket printBucket = new PrintBucket(duplicate);
             for (FileItem file : duplicate.getFiles()) {
-                allDuplicatedPaths.add(file.getPath());
-                var prevBucket = path2bucket.put(file.getPath(), printBucket);
-                checkState(prevBucket == null, "File " + file.getPath() + " mapped twice");
+                allDuplicatedPaths.add(file.path());
+                var prevBucket = path2bucket.put(file.path(), printBucket);
+                checkState(prevBucket == null, "File " + file.path() + " mapped twice");
             }
         }
 
@@ -82,7 +82,7 @@ public class HtmlReportGenerator implements ReportGenerator {
                     w.print("</td><td>");
                     w.println(String.join(" ", printBucket.bucket.getFiles()
                             .stream()
-                            .map(FileItem::getPath)
+                            .map(FileItem::path)
                             .map(p -> "<a href=\"file://" + p + "\">" + p + "</a>")
                             .filter(p -> !p.equals(path))
                             .collect(Collectors.toList())));

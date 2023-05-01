@@ -25,7 +25,7 @@ public class MutableFileBucket implements FileBucket {
     }
 
     public long fileSize() {
-        return files.getFirst().getSize();
+        return files.getFirst().size();
     }
 
     public boolean isSingleton() {

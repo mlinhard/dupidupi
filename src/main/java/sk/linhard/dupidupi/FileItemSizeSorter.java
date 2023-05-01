@@ -23,7 +23,7 @@ public class FileItemSizeSorter implements Consumer<FileItem> {
     @Override
     public void accept(FileItem fileItem) {
         fileCount++;
-        files.compute(fileItem.getSize(), (k, existingBucket) -> {
+        files.compute(fileItem.size(), (k, existingBucket) -> {
             if (existingBucket == null) {
                 return new MutableFileBucket(fileItem);
             } else {

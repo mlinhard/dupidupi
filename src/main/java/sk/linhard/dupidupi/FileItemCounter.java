@@ -20,7 +20,7 @@ public class FileItemCounter implements Consumer<FileItem> {
     @Override
     public void accept(FileItem fileItem) {
         count++;
-        sizes.add(fileItem.getSize());
+        sizes.add(fileItem.size());
         if (count % 10_000L == 0) {
             log.info("Count {}", count);
         }

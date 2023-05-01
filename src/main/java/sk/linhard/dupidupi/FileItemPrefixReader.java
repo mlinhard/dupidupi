@@ -38,7 +38,7 @@ public class FileItemPrefixReader {
 
     public int nextByte() {
         try {
-            if (readFile >= item.getSize()) {
+            if (readFile >= item.size()) {
                 return -1;
             }
             if (buffer == null) {
@@ -51,13 +51,13 @@ public class FileItemPrefixReader {
             } else {
                 buffer.clear();
                 while (fileChannel == null || !fileChannel.isOpen()) {
-                    fileChannel = fileChannelRepository.get(item.getPath());
+                    fileChannel = fileChannelRepository.get(item.path());
                 }
                 fileChannel.position(nextBufferReadOffset);
                 int ret = fileChannel.read(buffer);
                 buffer.flip();
                 if (ret == -1) {
-                    nextBufferReadOffset = item.getSize();
+                    nextBufferReadOffset = item.size();
                     return -1;
                 } else {
                     nextBufferReadOffset += ret;

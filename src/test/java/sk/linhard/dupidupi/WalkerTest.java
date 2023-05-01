@@ -24,7 +24,7 @@ public class WalkerTest {
                 )
         );
         List<String> foundPaths = new ArrayList<>();
-        walker.run(fileItem -> foundPaths.add(fileItem.getPath()));
+        walker.run(fileItem -> foundPaths.add(fileItem.path()));
 
         assertThat(foundPaths).hasSize(4);
         assertThat(foundPaths).containsOnly(

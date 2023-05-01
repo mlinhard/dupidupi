@@ -9,6 +9,6 @@ public class FileItemPrinter implements Consumer<FileItem> {
 
     @Override
     public void accept(FileItem fileItem) {
-        log.info("Found: {} size {}", fileItem.getPath(), fileItem.getSize());
+        log.info("Found: {} size {}", fileItem.path(), fileItem.size());
     }
 }

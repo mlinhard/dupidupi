@@ -1,11 +1,12 @@
 package sk.linhard.dupidupi;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
+import sk.linhard.dupidupi.report.Path;
 
-@Value
-public class FileItem {
-    String path;
-    long size;
+public record FileItem(String path,
+                       long size) implements Path {
+
 
     @Override
     public String toString() {

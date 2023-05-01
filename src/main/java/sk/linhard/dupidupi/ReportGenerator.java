@@ -11,7 +11,7 @@ public interface ReportGenerator {
             return switch (type) {
                 case JSON -> new JsonReportGenerator(reportPath, results);
                 case TEXT -> throw new UnsupportedOperationException("Text not yet supported");
-                case HTML -> new HtmlReportGenerator(reportPath, results);
+                case HTML -> new OldHtmlReportGenerator(reportPath, results);
                 case TSV -> new TsvGzReportGenerator(reportPath, results);
             };
         }

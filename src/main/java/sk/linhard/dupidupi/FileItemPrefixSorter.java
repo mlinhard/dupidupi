@@ -79,7 +79,7 @@ public class FileItemPrefixSorter {
         }
 
         long fileSize() {
-            return readers[0].getItem().getSize();
+            return readers[0].getItem().size();
         }
 
         FileBucket toBucket() {

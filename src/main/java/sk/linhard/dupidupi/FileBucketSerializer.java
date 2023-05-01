@@ -18,7 +18,7 @@ public class FileBucketSerializer extends StdSerializer<FileBucket> {
         jgen.writeNumberField("size", fileBucket.fileSize());
         jgen.writeArrayFieldStart("files");
         for (FileItem file : fileBucket.getFiles()) {
-            jgen.writeString(file.getPath());
+            jgen.writeString(file.path());
         }
         jgen.writeEndArray();
         jgen.writeEndObject();

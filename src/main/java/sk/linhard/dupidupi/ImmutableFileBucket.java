@@ -17,7 +17,7 @@ public class ImmutableFileBucket implements FileBucket {
     }
 
     public long fileSize() {
-        return files.get(0).getSize();
+        return files.get(0).size();
     }
 
     public boolean isSingleton() {
