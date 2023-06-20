@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 
@@ -41,7 +42,20 @@ public class FileItemSizeSorter implements Consumer<FileItem> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FileItemSizeSorter that = (FileItemSizeSorter) o;
-        return fileCount == that.fileCount && Objects.equals(files, that.files);
+        return fileCount == that.fileCount && equalSizeBuckets(that);
+    }
+
+    private boolean equalSizeBuckets(FileItemSizeSorter that) {
+        var allThis = this.streamSizeBuckets().iterator();
+        var allThat = that.streamSizeBuckets().iterator();
+        while (allThis.hasNext() && allThat.hasNext()) {
+            var thisBucket = allThis.next();
+            var thatBucket = allThat.next();
+            if (!thisBucket.getFiles().equals(thatBucket.getFiles())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -57,11 +71,10 @@ public class FileItemSizeSorter implements Consumer<FileItem> {
         return files.size();
     }
 
-    public Iterable<FileBucket> getSizeBuckets() {
+    public Stream<? extends FileBucket> streamSizeBuckets() {
         return files.values().stream()
                 .map(MutableFileBucket::toImmutable)
-                .sorted(comparing(FileBucket::fileSize))
-                .collect(Collectors.toList());
+                .sorted(comparing(FileBucket::fileSize));
     }
 
     public Set<Long> getBucketFileSizes() {

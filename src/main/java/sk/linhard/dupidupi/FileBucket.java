@@ -33,6 +33,23 @@ public interface FileBucket extends Iterable<FileItem> {
                 .collect(Collectors.toList());
     }
 
+    default List<String> getSortedPathsWithout(String pathToExclude) {
+        return getFiles().stream()
+                .map(FileItem::path)
+                .filter(p -> !p.equals(pathToExclude))
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+
+    default String firstPathStartingWith(String preferredPath) {
+        return getFiles().stream()
+                .filter(f -> f.path().startsWith(preferredPath))
+                .findFirst()
+                .map(FileItem::path)
+                .orElse(null);
+    }
+
     @Override
     default Iterator<FileItem> iterator() {
         return getFiles().iterator();

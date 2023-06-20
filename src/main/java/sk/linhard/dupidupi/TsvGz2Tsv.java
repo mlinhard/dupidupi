@@ -4,42 +4,42 @@ package sk.linhard.dupidupi;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import sk.linhard.dupidupi.report.HtmlReportGenerator;
 import sk.linhard.dupidupi.report.ReportComputer;
+import sk.linhard.dupidupi.report.TsvReportGenerator;
 
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-@Command(name = "tsvgz2html", mixinStandardHelpOptions = true, version = "1.0",
-        description = "Converts a TSV report to HTML report")
+@Command(name = "tsvgz2tsv", mixinStandardHelpOptions = true, version = "1.0",
+        description = "Converts a TSV duplicate report to TSV deletion report")
 @Slf4j
-public class TsvGz2Html implements Callable<Integer> {
+public class TsvGz2Tsv implements Callable<Integer> {
 
     @CommandLine.Parameters
-    File tsvReport;
+    File tsvInputDuplicateReport;
     @CommandLine.Parameters
-    File htmlReport;
+    File tsvOutputDeletionReport;
     @CommandLine.Option(names = {"-P", "--prefer"}, description = "Preferred path for original file")
     List<String> preferredPaths;
     @CommandLine.Option(names = {"-S", "--sort-by-size"}, defaultValue = "false", description = "Preferred path for original file")
     boolean sortBySize;
 
     public static void main(String... args) {
-        int exitCode = new CommandLine(new TsvGz2Html()).execute(args);
+        int exitCode = new CommandLine(new TsvGz2Tsv()).execute(args);
         System.exit(exitCode);
     }
 
     @Override
     public Integer call() {
         try {
-            log.info("Converting report");
-            log.info("TSV Input: {}", tsvReport.getAbsolutePath());
-            log.info("HTML Output: {}", htmlReport.getAbsolutePath());
-            try (TsvGzReportReader tsvGzReportReader = new TsvGzReportReader(tsvReport)) {
+            log.info("Converting duplicate report to deletion report");
+            log.info("TSV Input: {}", tsvInputDuplicateReport.getAbsolutePath());
+            log.info("TSV Output: {}", tsvOutputDeletionReport.getAbsolutePath());
+            try (TsvGzReportReader tsvGzReportReader = new TsvGzReportReader(tsvInputDuplicateReport)) {
                 var results = tsvGzReportReader.parseResults();
                 var report = new ReportComputer(results, sortBySize, preferredPaths).compute();
-                var reportGenerator = new HtmlReportGenerator(htmlReport, report);
+                var reportGenerator = new TsvReportGenerator(tsvOutputDeletionReport, report);
                 reportGenerator.generate();
             }
             return 0;

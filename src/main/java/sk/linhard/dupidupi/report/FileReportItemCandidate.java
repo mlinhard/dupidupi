@@ -10,6 +10,7 @@ import sk.linhard.dupidupi.FileBucket;
 import sk.linhard.dupidupi.FileItem;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +33,21 @@ public class FileReportItemCandidate implements Iterable<FileItem> {
                 duplicates,
                 bucket.duplicatedBytes(),
                 null);
+    }
+
+    public ReportItem toReportItem(List<String> preferredPaths) {
+        for (String preferredPath : preferredPaths) {
+            var foundPath = bucket.firstPathStartingWith(preferredPath);
+            if (foundPath != null) {
+                return new ReportItem(
+                        ReportItem.ReportItemType.FILE,
+                        foundPath,
+                        bucket.getSortedPathsWithout(foundPath),
+                        bucket.duplicatedBytes(),
+                        null);
+            }
+        }
+        return toReportItem();
     }
 
     @Override

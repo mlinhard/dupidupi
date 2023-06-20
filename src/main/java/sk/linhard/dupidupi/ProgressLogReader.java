@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -30,6 +31,7 @@ public class ProgressLogReader implements ProgressLogInput {
     BufferedReader reader;
     MutableFileBucket currentBucketCandidate;
     Integer currentBucketId;
+    int currentLine;
 
     public ResultRepository parseResultsFromFinishedLog(Set<Long> sizesToCheck) {
         Set<Long> remainingSizes = new HashSet<>(sizesToCheck);
@@ -54,7 +56,6 @@ public class ProgressLogReader implements ProgressLogInput {
         try {
             List<MutableFileBucket> duplicates = new LinkedList<>();
             Item item;
-            int lineNum = 1;
             while ((item = nextItem()) != null) {
                 switch (item.type) {
                     case FILE -> {
@@ -63,26 +64,25 @@ public class ProgressLogReader implements ProgressLogInput {
                             currentBucketId = item.bucketId;
                             currentBucketCandidate = new MutableFileBucket(fileItem);
                         } else {
-                            checkState(item.bucketId == currentBucketId, "inconsistent log on line " + lineNum);
-                            checkState(item.fileSize == currentBucketCandidate.fileSize(), "inconsistent log on line " + lineNum);
+                            checkState(Objects.equals(item.bucketId, currentBucketId), "inconsistent log on line " + currentLine);
+                            checkState(item.fileSize == currentBucketCandidate.fileSize(), "inconsistent log on line " + currentLine);
                             currentBucketCandidate.add(fileItem);
                         }
                     }
                     case DONE_D -> {
-                        checkState(item.bucketId == currentBucketId, "inconsistent log on line " + lineNum);
-                        checkState(currentBucketCandidate != null, "inconsistent log on line " + lineNum);
+                        checkState(Objects.equals(item.bucketId, currentBucketId), "inconsistent log on line " + currentLine);
+                        checkState(currentBucketCandidate != null, "inconsistent log on line " + currentLine);
                         duplicates.add(currentBucketCandidate);
                         currentBucketCandidate = null;
                     }
                     case DONE_S -> {
-                        checkState(currentBucketCandidate == null, "inconsistent log on line " + lineNum);
+                        checkState(currentBucketCandidate == null, "inconsistent log on line " + currentLine);
                         return new ProcessedSizeBucket(item.fileSize, duplicates.stream()
                                 .map(MutableFileBucket::toImmutable)
                                 .collect(toImmutableList()));
                     }
                     default -> throw new IllegalStateException("unknown item type");
                 }
-                lineNum++;
             }
             return null;
         } catch (IOException e) {
@@ -93,6 +93,7 @@ public class ProgressLogReader implements ProgressLogInput {
     private Item nextItem() throws IOException {
         ensureReader();
         var nextLine = reader.readLine();
+        currentLine++;
         return nextLine == null ? null : parseItem(nextLine);
     }
 
@@ -154,7 +155,9 @@ public class ProgressLogReader implements ProgressLogInput {
 
         @Override
         public ProcessedSizeBucket next() {
-            return next = ProgressLogReader.this.nextProcessedSizeBucket();
+            var toReturn = next;
+            next = ProgressLogReader.this.nextProcessedSizeBucket();
+            return toReturn;
         }
     }
 }

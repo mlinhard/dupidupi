@@ -7,50 +7,25 @@ import lombok.experimental.FieldDefaults;
 import sk.linhard.dupidupi.ResultRepository;
 
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ReportComputer {
 
-    final ResultRepository resultRepository;
+    ResultRepository resultRepository;
+    boolean sortBySize;
+    List<String> preferredPaths;
 
     public Report compute() {
-
-        // TODO: basic algo
-        //  so for each dupbucket
-        //  create entry edge -> parent directory report item
-        //  if new create, if not add subitems
-        //  include in report only if pass threshold
-        //  if included in reports, don't include subitems
-
-        var fileCandidates = resultRepository.duplicates().stream()
+        return new Report(resultRepository.duplicates().stream()
                 .map(FileReportItemCandidate::new)
-                .toList();
-
-        var directoryCandidates = new HashMap<Edge, DirectoryReportItemCandidate>();
-
-        for (var fileCandidate : fileCandidates) {
-            for (var edge : fileCandidate.edgesBetweenParents()) {
-                directoryCandidates.compute(edge, (prevEdge, dirCandidate) -> {
-                    if (prevEdge == null) {
-                        return null;
-                    }
-                    return null;
-                });
-            }
-        }
-
-        var items = fileCandidates.stream()
-                .map(FileReportItemCandidate::toReportItem)
-                .collect(Collectors.toList());
-
-        items.sort(Comparator.comparing(ReportItem::numBytesDuplicated)
-                .thenComparing(ReportItem::original)
-                .reversed());
-
-        return new Report(ImmutableList.copyOf(items));
+                .map(preferredPaths == null || preferredPaths.isEmpty()
+                        ? FileReportItemCandidate::toReportItem
+                        : item -> item.toReportItem(preferredPaths))
+                .sorted(sortBySize
+                        ? Comparator.comparing(ReportItem::numBytesDuplicated).thenComparing(ReportItem::original).reversed()
+                        : Comparator.comparing(ReportItem::original))
+                .collect(ImmutableList.toImmutableList()));
     }
-
 }

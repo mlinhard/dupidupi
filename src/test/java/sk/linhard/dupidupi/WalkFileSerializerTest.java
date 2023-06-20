@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,7 +25,7 @@ public class WalkFileSerializerTest {
 
         assertThat(sorted2.numSizeBuckets()).isEqualTo(3);
         assertThat(sorted2.numFiles()).isEqualTo(6);
-        var buckets = StreamSupport.stream(sorted2.getSizeBuckets().spliterator(), false).collect(Collectors.toList());
+        var buckets = sorted2.streamSizeBuckets().toList();
         assertThat(buckets.size()).isEqualTo(3);
         var b10 = buckets.get(0);
         var b20 = buckets.get(1);

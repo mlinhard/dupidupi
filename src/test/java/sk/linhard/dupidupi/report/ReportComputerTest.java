@@ -16,76 +16,94 @@ import java.util.stream.Collectors;
 import static java.lang.System.arraycopy;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Disabled
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReportComputerTest {
 
     ResultRepository results;
     Report report;
 
+    boolean sortBySize = true;
+    List<String> preferredPaths = List.of();
+
     @Test
     void compute1() {
-        givenDuplicates(11l, "/a/f1.txt", "/b/f1.txt", "/c/f1.txt");
-        givenDuplicates(12l, "/a/f2.txt", "/b/f2.txt", "/d/f2.txt");
-        givenDuplicates(13l, "/a/f3.txt", "/d/f3.txt", "/c/f3.txt");
+        givenDuplicates(11L, "/a/f1.txt", "/b/f1.txt", "/c/f1.txt");
+        givenDuplicates(12L, "/a/f2.txt", "/b/f2.txt", "/d/f2.txt");
+        givenDuplicates(13L, "/a/f3.txt", "/d/f3.txt", "/c/f3.txt");
 
         computeReport();
 
         assertReport(
-                file(26l, "/a/f3.txt", "/c/f3.txt", "/d/f3.txt"),
-                file(24l, "/a/f2.txt", "/b/f2.txt", "/d/f2.txt"),
-                file(22l, "/a/f1.txt", "/b/f1.txt", "/c/f1.txt")
+                file(26L, "/a/f3.txt", "/c/f3.txt", "/d/f3.txt"),
+                file(24L, "/a/f2.txt", "/b/f2.txt", "/d/f2.txt"),
+                file(22L, "/a/f1.txt", "/b/f1.txt", "/c/f1.txt")
         );
     }
 
-
     @Test
     void compute2() {
-        givenDuplicates(0l,
+        givenDuplicates(11L, "/a/f1.txt", "/b/f1.txt", "/c/f1.txt");
+        givenDuplicates(12L, "/a/f2.txt", "/b/f2.txt", "/d/f2.txt");
+        givenDuplicates(13L, "/a/f3.txt", "/d/f3.txt", "/c/f3.txt");
+        givenPreferredPaths("/b");
+
+        computeReport();
+
+        assertReport(
+                file(26L, "/a/f3.txt", "/c/f3.txt", "/d/f3.txt"),
+                file(24L, "/b/f2.txt", "/a/f2.txt", "/d/f2.txt"),
+                file(22L, "/b/f1.txt", "/a/f1.txt", "/c/f1.txt")
+        );
+    }
+
+    @Disabled("Doesn't work yet")
+    @Test
+    void compute3() {
+        givenDuplicates(0L,
                 "/home/d001/f001.txt",
                 "/home/d001/f002.txt");
-        givenDuplicates(1l,
+        givenDuplicates(1L,
                 "/home/d003/f003.txt",
                 "/home/d004/f003.txt");
-        givenDuplicates(5l,
+        givenDuplicates(5L,
                 "/home/d005/f004.txt",
                 "/home/d006/f004.txt");
-        givenDuplicates(5l,
+        givenDuplicates(5L,
                 "/home/d005/f005.txt",
                 "/home/d006/f005.txt");
-        givenDuplicates(10l,
+        givenDuplicates(10L,
                 "/home/d005/f006.txt",
                 "/home/d006/f006.txt");
 
         computeReport();
 
         assertReport(
-                dir(20l, List.of(
-                                file(10l,
+                dir(20L, List.of(
+                                file(10L,
                                         "/home/d005/f006.txt",
                                         "/home/d006/f006.txt"),
-                                file(5l,
+                                file(5L,
                                         "/home/d005/f004.txt",
                                         "/home/d006/f004.txt"),
-                                file(5l,
+                                file(5L,
                                         "/home/d005/f005.txt",
                                         "/home/d006/f005.txt")),
                         "/home/d005",
                         "/home/d006"),
-                dir(1l, List.of(
-                                file(1l,
+                dir(1L, List.of(
+                                file(1L,
                                         "/home/d003/f003.txt",
                                         "/home/d004/f003.txt")),
                         "/home/d003",
                         "/home/d004"),
-                file(0l,
+                file(0L,
                         "/home/d001/f001.txt",
                         "/home/d001/f002.txt")
         );
     }
 
     private void computeReport() {
-        report = new ReportComputer(results).compute();
+        report = new ReportComputer(results, sortBySize, preferredPaths).compute();
     }
 
     private void assertReport(ReportItem... items) {
@@ -112,9 +130,13 @@ public class ReportComputerTest {
             results = new ResultRepository();
         }
         results.addDuplicateBucket(new ImmutableFileBucket(ImmutableList.copyOf(
-                Arrays.asList(paths).stream()
+                Arrays.stream(paths)
                         .map(path -> new FileItem(path, size))
                         .collect(Collectors.toList())
         )));
+    }
+
+    private void givenPreferredPaths(String... preferredPaths) {
+        this.preferredPaths = List.of(preferredPaths);
     }
 }

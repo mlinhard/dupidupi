@@ -18,7 +18,7 @@ public class WalkFileSerializer {
     public void store(FileItemSizeSorter sizeBuckets, File walkFile) {
         try (GzipCompressorOutputStream gzipStream = new GzipCompressorOutputStream(new FileOutputStream(walkFile));
              PrintWriter w = new PrintWriter(gzipStream, false, StandardCharsets.UTF_8)) {
-            for (FileBucket sizeBucket : sizeBuckets.getSizeBuckets()) {
+            sizeBuckets.streamSizeBuckets().forEach(sizeBucket -> {
                 long size = sizeBucket.fileSize();
                 for (String path : sizeBucket.getSortedPaths()) {
                     w.print(size);
@@ -26,7 +26,7 @@ public class WalkFileSerializer {
                     w.print(path);
                     w.print("\n");
                 }
-            }
+            });
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

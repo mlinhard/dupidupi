@@ -70,7 +70,7 @@ public class Deduper {
 
             var prefixSorter = new FileItemPrefixSorter(pLogWriter, fileChannelRepository);
 
-            var allSizeBuckets = sizeSorter.getSizeBuckets().iterator();
+            var allSizeBuckets = sizeSorter.streamSizeBuckets().iterator();
             var allProcessedSizeBuckets = pLogReader.iterator();
 
             int i = 1;
@@ -82,23 +82,26 @@ public class Deduper {
                             format("The {}. processed size bucket file size {} doesn't correspond to expected {}",
                                     i, processedSizeBucket.fileSize(), sizeBucket.fileSize()));
                     log.info("Skipping size-{} bucket with {} files ({}/{})", sizeBucket.fileSize(), sizeBucket.size(), i, n);
+                    for (var dupBucket : processedSizeBucket.duplicates()) {
+                        pLogWriter.addDuplicateBucket(dupBucket);
+                    }
                 } else {
                     if (!sizeBucket.isSingleton() && sizeBucket.fileSize() != 0) {
                         log.info("Sorting size-{} bucket with {} files ({}/{})", sizeBucket.fileSize(), sizeBucket.size(), i, n);
                     }
                     prefixSorter.sort(sizeBucket);
-                    pLogWriter.addSizeBucketCompletion(sizeBucket.fileSize());
-                    i++;
                 }
+                i++;
+                pLogWriter.addSizeBucketCompletion(sizeBucket.fileSize());
             }
         }
     }
 
     private boolean resumeProgress() throws IOException {
-        var walkFilesMatch = compareOrCreateWalkFiles();
+        var canResume = compareOrCreateWalkFiles();
 
         File progressLogInputPath = config.progressLogInputPath();
-        if (walkFilesMatch) {
+        if (canResume) {
             Files.copy(config.progressLogPath(), progressLogInputPath);
             return true;
         } else {
@@ -111,12 +114,17 @@ public class Deduper {
         WalkFileSerializer wfs = new WalkFileSerializer();
         File walkFile = config.walkFilePath();
         if (walkFile.exists()) {
-            var previousSizeSorter = wfs.load(walkFile);
-            var walkFilesMatch = previousSizeSorter.equals(sizeSorter);
-            if (!walkFilesMatch) {
-                log.warn("Walk file stored at {} doesn't match current file walk", walkFile.getAbsolutePath());
+            if (config.progressLogPath().exists()) {
+                var previousSizeSorter = wfs.load(walkFile);
+                var walkFilesMatch = previousSizeSorter.equals(sizeSorter);
+                if (!walkFilesMatch) {
+                    log.warn("Walk file stored at {} doesn't match current file walk", walkFile.getAbsolutePath());
+                }
+                return walkFilesMatch;
+            } else {
+                log.info("Progress log {} doesn't exist, not restoring", config.progressLogPath().getAbsolutePath());
+                return false;
             }
-            return walkFilesMatch;
         } else {
             log.debug("Storing walk file {}", walkFile.getAbsolutePath());
             wfs.store(sizeSorter, walkFile);

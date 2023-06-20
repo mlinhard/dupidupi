@@ -28,6 +28,7 @@ public class HtmlReportGenerator implements ReportGenerator {
                     <html>
                         <head>
                             <title>Deletability report</title>
+                            <meta charset="utf-8">
                             <style>
                             table {
                               border-collapse: collapse;

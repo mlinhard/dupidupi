@@ -1,3 +1,4 @@
 /target/
 /.idea/
 /testdata/
+dependency-reduced-pom.xml
