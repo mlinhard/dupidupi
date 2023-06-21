@@ -10,8 +10,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static com.google.common.base.Preconditions.checkState;
-
 @Command(name = "dupidupi", mixinStandardHelpOptions = true, version = "1.0", description = "Deduplicate a set of files")
 @Slf4j
 public class Main implements Callable<Integer> {
@@ -45,8 +43,13 @@ public class Main implements Callable<Integer> {
     public Integer call() {
         try {
             var config = prepareConfig();
+            if (!config.hasRoots()) {
+                log.error("No files to deduplicate");
+                return 1;
+            }
+
             log.info("Deduplicating files in\n   {}", String.join("\n   ", config.getRoots()));
-            if (config.getIgnore() != null && !config.getIgnore().isEmpty()) {
+            if (config.hasIgnored()) {
                 log.info("Ignoring files in\n   {}", String.join("\n   ", config.getIgnore()));
             }
             Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
@@ -76,7 +79,6 @@ public class Main implements Callable<Integer> {
         if (rootFolders != null && !rootFolders.isEmpty()) {
             config.getRoots().addAll(rootFolders);
         }
-        checkState(!config.getRoots().isEmpty(), "No folders to deduplicate");
         if (ignoredFolders != null && !ignoredFolders.isEmpty()) {
             config.getIgnore().addAll(ignoredFolders);
         }

@@ -30,6 +30,14 @@ public class Config {
     boolean resumable = false;
     ReportType reportType = ReportType.TSV;
 
+    public boolean hasRoots() {
+        return roots != null && !roots.isEmpty();
+    }
+
+    public boolean hasIgnored() {
+        return ignore != null && !ignore.isEmpty();
+    }
+
     public List<Path> getRootPaths() {
         return roots.stream()
                 .map(File::new)
