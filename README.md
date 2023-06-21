@@ -2,27 +2,27 @@
 
 File deduplication tool that uses byte-to-byte comparison to detect duplicate file in a set of file system subtrees.
 
-## Usage demo
-
 Run in an empty folder:
 
 ```bash
 $ echo hello > hello1.txt
 $ echo hello > hello2.txt
-
+$ echo world > world1.txt
+$ echo world > world2.txt
+$
 $ dupidupi .
-
-09:44:47.083 [main] INFO sk.linhard.dupidupi.Main - Deduplicating files in
+09:55:52.260 [main] INFO sk.linhard.dupidupi.Main - Deduplicating files in
    .
-09:44:47.087 [main] INFO sk.linhard.dupidupi.Main - Found 3 files with 2 different sizes
-09:44:47.103 [main] INFO sk.linhard.dupidupi.Deduper - Sorting size-6 bucket with 2 files (1/2)
-09:44:47.111 [main] INFO sk.linhard.dupidupi.Main - Done sorting. Found 1 duplicates in 1 duplicate sets, total 6 bytes duplicated
-09:44:47.111 [main] INFO sk.linhard.dupidupi.Main - Generating duplicate report to output/report.tsv.gz
-
+09:55:52.265 [main] INFO sk.linhard.dupidupi.Main - Found 4 files with 1 different sizes
+09:55:52.280 [main] INFO sk.linhard.dupidupi.Deduper - Sorting size-6 bucket with 4 files (1/1)
+09:55:52.288 [main] INFO sk.linhard.dupidupi.Main - Done sorting. Found 2 duplicates in 2 duplicate sets, total 12 bytes duplicated
+09:55:52.288 [main] INFO sk.linhard.dupidupi.Main - Generating duplicate report to output/report.tsv.gz
+$
 $ gunzip -c output/report.tsv.gz 
-
-0	6	./hello1.txt
-0	6	./hello2.txt
+0	6	./world1.txt
+0	6	./world2.txt
+1	6	./hello1.txt
+1	6	./hello2.txt
 ```
 
 ## Dupi-Dupi deduplication algorithm
