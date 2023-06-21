@@ -28,7 +28,7 @@ public class Config {
     String outputDir = "output";
     boolean walkOnly = false;
     boolean resumable = false;
-    ReportType reportType = ReportType.JSON;
+    ReportType reportType = ReportType.TSV;
 
     public List<Path> getRootPaths() {
         return roots.stream()
@@ -45,6 +45,9 @@ public class Config {
     }
 
     public static Config load(File path) {
+        if (path == null) {
+            return new Config(); // return default config
+        }
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.readValue(path, Config.class);
