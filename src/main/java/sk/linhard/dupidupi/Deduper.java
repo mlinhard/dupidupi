@@ -46,12 +46,10 @@ public class Deduper {
     }
 
     private ProgressLogInput createProgressLogInput() throws IOException {
-        var canUseSavedProgressLog = resumeProgress();
-        if (canUseSavedProgressLog && config.isResumable()) {
+        if (config.isResumable() && canResume()) {
             return new ProgressLogReader(config.progressLogInputPath());
-        } else {
-            return new EmptyProgressLogInput();
         }
+        return new EmptyProgressLogInput();
     }
 
     private ProgressLog createProgressLog() {
@@ -97,7 +95,7 @@ public class Deduper {
         }
     }
 
-    private boolean resumeProgress() throws IOException {
+    private boolean canResume() throws IOException {
         var canResume = compareOrCreateWalkFiles();
 
         File progressLogInputPath = config.progressLogInputPath();

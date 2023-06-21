@@ -16,7 +16,7 @@ import static com.google.common.base.Preconditions.checkState;
 @Slf4j
 public class Main implements Callable<Integer> {
 
-    @Option(names = {"-c", "--config"}, paramLabel = "CONFIG", description = "the configuration file")
+    @Option(names = {"-c", "--config"}, description = "the configuration file")
     File configFile;
     @Option(names = {"-w", "--walk-only"}, description = "Only walk the file system")
     Boolean walkOnly;
@@ -32,7 +32,7 @@ public class Main implements Callable<Integer> {
     Config.ReportType reportType;
     @Option(names = {"-o", "--output-folder"}, description = "Output folder")
     String outputFolder;
-    @CommandLine.Parameters(paramLabel = "ROOT_FOLDER", description = "The folder (possibly more than one) to deduplicate")
+    @CommandLine.Parameters(description = "The folder (possibly more than one) to deduplicate")
     List<String> rootFolders;
 
 
@@ -46,7 +46,7 @@ public class Main implements Callable<Integer> {
         try {
             var config = prepareConfig();
             log.info("Deduplicating files in\n   {}", String.join("\n   ", config.getRoots()));
-            if (config.getIgnore() != null && config.getIgnore().isEmpty()) {
+            if (config.getIgnore() != null && !config.getIgnore().isEmpty()) {
                 log.info("Ignoring files in\n   {}", String.join("\n   ", config.getIgnore()));
             }
             Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
