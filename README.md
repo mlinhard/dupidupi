@@ -25,6 +25,9 @@ $ gunzip -c output/report.tsv.gz
 1	6	./hello2.txt
 ```
 
+The gzipped TSV output (default output format) shows duplicate sets in form `<bucketID> <fileSize> <path>`, i.e.
+all files having the same `<bucketID>` are duplicates of given `<fileSize>` and can be found on given `<path>`.
+
 ## Dupi-Dupi deduplication algorithm
 
 When discriminating whether two files are equal by content Dupi-dupi first looks at their size. When sizes aren't equal
