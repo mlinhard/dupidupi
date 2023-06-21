@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ "${DUPIDUPI_HOME}x" == "x" ]; then
+    echo "Please define DUPIDUPI_HOME variable"
+    exit 1
+fi
+java -jar $DUPIDUPI_HOME/dupidupi.jar "$@"

@@ -46,7 +46,9 @@ public class Main implements Callable<Integer> {
         try {
             var config = prepareConfig();
             log.info("Deduplicating files in\n   {}", String.join("\n   ", config.getRoots()));
-            log.info("Ignoring files in\n   {}", String.join("\n   ", config.getIgnore()));
+            if (config.getIgnore() != null && config.getIgnore().isEmpty()) {
+                log.info("Ignoring files in\n   {}", String.join("\n   ", config.getIgnore()));
+            }
             Walker w = new Walker(config.getRootPaths(), config.getIgnorePaths());
 
             FileItemSizeSorter sizeSorter = new FileItemSizeSorter();
@@ -64,7 +66,7 @@ public class Main implements Callable<Integer> {
             ReportGenerator.Factory.create(config.getReportType(), reportFile, results).generate();
             return 0;
         } catch (Exception e) {
-            log.error("ERROR: {}", e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return 1;
         }
     }
