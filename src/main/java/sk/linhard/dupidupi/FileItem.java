@@ -1,10 +1,6 @@
 package sk.linhard.dupidupi;
 
-import sk.linhard.dupidupi.report.Path;
-
-public record FileItem(String path,
-                       long size) implements Path, Comparable<FileItem> {
-
+public record FileItem(String path, long size) implements Comparable<FileItem> {
 
     @Override
     public String toString() {
